@@ -9,21 +9,21 @@
 
  
 class BasicCalendar {
-	private $month;
-	private $year;
-	private $day_displays = array(
+	protected $month;
+	protected $year;
+	protected $day_displays = array(
 		"Su", "Mo", "Tu", "We", "Th", "Fr", "Sa",
 	);
-	private $days_in_month;
-	private $first_of_month_timestamp;
-	private $first_of_month_display;
-	private $last_of_month_display;
-	private $first_of_month_info;
-	private $last_of_prev_month_info;
-	private $first_of_next_month_info;
-	private $first_display_day_info;
-	private $number_of_display_weeks;
-	private $full_dates_array;
+	protected $days_in_month;
+	protected $first_of_month_timestamp;
+	protected $first_of_month_display;
+	protected $last_of_month_display;
+	protected $first_of_month_info;
+	protected $last_of_prev_month_info;
+	protected $first_of_next_month_info;
+	protected $first_display_day_info;
+	protected $number_of_display_weeks;
+	protected $full_dates_array;
 
 		
 	public function __construct($args=array()) {
@@ -53,20 +53,24 @@ class BasicCalendar {
 
 		// build table with header of weekdays
 		ob_start();
-		$this->display_title();
 		?>
-			<table class="basic-calendar-table">
+		<div class="tsd-basic-calendar">
+			<?php  $this->display_title()	?>
+			<table class="tsd-basic-calendar-table">
 				<?php $this->display_table_head() ?>
 				<?php $this->display_table_rows() ?>
 			</table>
+		</div>
 		<?php
 
 		// build each day of week with non-month days gray'd out
 
-		// echo output, use ob
+		$table_display = ob_get_clean();
+
+		echo $table_display;
 	}
 
-	private function display_table_head() {
+	protected function display_table_head() {
 		?>
 			<thead>
 				<tr>
@@ -80,15 +84,15 @@ class BasicCalendar {
 		<?php
 	}
 
-	private function display_title() {
+	protected function display_title() {
 		?>
-		<div class="calendar-title">
+		<div class="tsd-calendar-title">
 			<h3><?php echo $this->first_of_month_info['month'] . " " . $this->year ?></h3>
 		</div>
 		<?php
 	}
 
-	private function build_date_array() {
+	protected function build_date_array() {
 		// day of week for 1st - 
 		$this->full_dates_array = array();
 		$week_cnt = $this->number_of_display_weeks;
@@ -106,30 +110,50 @@ class BasicCalendar {
 				'timestamp' => $tmp_timestamp,
 				'date_display' => date('Y-m-d', $tmp_timestamp),
 				'day_display' => date('j', $tmp_timestamp),
+				'month' => $tmpdate_info['mon'],
+				'year' => $tmpdate_info['year'],
+				'weekday' => $tmpdate_info['wday'],
+				'yearday' => $tmpdate_info['yday'],
 			);
 			date_add($tmpdate, date_interval_create_from_date_string("1 day"));
 		}
 	}
 
-	private function display_table_rows() {
+	protected function display_table_rows() {
 		$week_cnt = $this->number_of_display_weeks;
 		for($week = 0; $week < $week_cnt; $week++) {
 			echo "<tr>";
 			for ($weekday = 0; $weekday < 7; $weekday++) {
-				echo "<td>{$this->full_dates_array[$week][$weekday]['day_display']}</td>";
+				$this->display_calendar_cell($this->full_dates_array[$week][$weekday]);
 			}
 			echo "</tr>";
 		}
 	}
 
-	private function build_last_of_prev_month_info() {
+	protected function display_calendar_cell($day_info) {
+		$month_class = ($day_info['month'] == $this->month) ? "tsd-in-month-day" : "tsd-non-month-day";
+		?>
+			<td class="<?php echo $month_class ?>">
+				<div class="tsd-month-day-div">
+					<span class='tsd-day-of-month-display'>
+						<?php echo $day_info['day_display'] ?>
+					</span>
+					<div class='tsd-daily-display'>
+						<?php echo 'tsd-in-month-day' == $month_class ? "Avail" : "" ?>
+					</div>
+				</div>
+			</td>
+		<?php
+	}
+
+	protected function build_last_of_prev_month_info() {
 		$tmpdate = date_create($this->first_of_month_display);
 		date_sub($tmpdate, date_interval_create_from_date_string("1 day"));
 		$tmp_timestamp = $tmpdate->getTimestamp();
 		$this->last_of_prev_month_info = getdate($tmp_timestamp);
 	}
 
-	private function build_first_display_day_info() {
+	protected function build_first_display_day_info() {
 		$tmpdate = date_create($this->first_of_month_display);
 		$first_day_of_week = $this->first_of_month_info['wday'];
 		if ($first_day_of_week) {
@@ -139,7 +163,7 @@ class BasicCalendar {
 		$this->first_display_day_info = getdate($tmp_timestamp);
 	}
 
-	private function build_first_of_next_month_info() {
+	protected function build_first_of_next_month_info() {
 		$tmpdate = date_create($this->last_of_month_display);
 		date_add($tmpdate, date_interval_create_from_date_string("1 day"));
 		$tmp_timestamp = $tmpdate->getTimestamp();
