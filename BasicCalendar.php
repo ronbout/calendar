@@ -23,7 +23,21 @@ class BasicCalendar {
 	protected $first_of_next_month_info;
 	protected $first_display_day_info;
 	protected $number_of_display_weeks;
+	protected $day_bk_color = "white";
+	protected $day_color = "black";
+	protected $day_text = "";
 	protected $full_dates_array;
+		// full dates array:
+		// 'timestamp',
+		// 'date_display',
+		// 'day_display',
+		// 'month',
+		// 'year',
+		// 'yearday',
+		// 'bk_color',
+		// 'color',
+		// 'text',
+		// 'link'
 
 		
 	public function __construct($args=array()) {
@@ -48,9 +62,37 @@ class BasicCalendar {
 
 	}
 
-	public function display() {
-		// figure out number of weeks to display 
+	public function set_default_day_colors($col, $bk_col) {
+		$this->day_color = $col;
+		$this->day_bk_color = $bk_col;
+	}
 
+	public function set_day_colors($date_color_array) {
+		// $date_color_array =
+		// date_of_month => array( col, bk_color)
+
+		foreach($date_color_array as $date => $colors) {
+			$week_wday = $this->date_to_week_day($date);
+			$this->full_dates_array[$week_wday['week']][$week_wday['wday']]['color'] = $colors[0];
+			$this->full_dates_array[$week_wday['week']][$week_wday['wday']]['bk_color'] = $colors[1];
+		}
+	}
+
+	public function set_default_day_text($text) {
+		$this->day_text = $text;
+	}
+
+	public function set_day_text($date_text_array) {
+		// $date_text_array =
+		// date_of_month => text
+
+		foreach($date_text_array as $date => $text) {
+			$week_wday = $this->date_to_week_day($date);
+			$this->full_dates_array[$week_wday['week']][$week_wday['wday']]['text'] = $text;
+		}
+	}
+
+	public function display() {
 		// build table with header of weekdays
 		ob_start();
 		?>
@@ -112,7 +154,6 @@ class BasicCalendar {
 				'day_display' => date('j', $tmp_timestamp),
 				'month' => $tmpdate_info['mon'],
 				'year' => $tmpdate_info['year'],
-				'weekday' => $tmpdate_info['wday'],
 				'yearday' => $tmpdate_info['yday'],
 			);
 			date_add($tmpdate, date_interval_create_from_date_string("1 day"));
@@ -131,15 +172,25 @@ class BasicCalendar {
 	}
 
 	protected function display_calendar_cell($day_info) {
-		$month_class = ($day_info['month'] == $this->month) ? "tsd-in-month-day" : "tsd-non-month-day";
+		if ($day_info['month'] == $this->month) {
+			$style = "style=color:" . (isset($day_info['color']) ? $day_info['color'] : $this->day_color) . ";";
+			$style .= "background-color:" . (isset($day_info['bk_color']) ? $day_info['bk_color'] : $this->day_bk_color) . ";";
+			$month_class = "tsd-in-month-day";
+			$text =  isset($day_info['text']) ? $day_info['text'] : $this->day_text;
+		} else {
+			$month_class = "tsd-non-month-day";
+			$style = "";
+			$text = "";
+		}
+		
 		?>
-			<td class="<?php echo $month_class ?>">
+			<td class="<?php echo $month_class ?>" <?php echo $style ?> >
 				<div class="tsd-month-day-div">
 					<span class='tsd-day-of-month-display'>
 						<?php echo $day_info['day_display'] ?>
 					</span>
 					<div class='tsd-daily-display'>
-						<?php echo 'tsd-in-month-day' == $month_class ? "Avail" : "" ?>
+						<?php echo $text ?>
 					</div>
 				</div>
 			</td>
@@ -168,5 +219,20 @@ class BasicCalendar {
 		date_add($tmpdate, date_interval_create_from_date_string("1 day"));
 		$tmp_timestamp = $tmpdate->getTimestamp();
 		$this->first_of_next_month_info = getdate($tmp_timestamp);
+	}
+
+	protected function date_to_week_day($day_of_month) {
+		$week = floor(($this->first_of_month_info['wday'] + $day_of_month) / 7);
+		$wday = ($this->first_of_month_info['wday'] + $day_of_month) % 7;
+		if (0 == $wday) {
+			$wday = 6;
+			$week--;
+		} else {
+			$wday--;
+		}
+		return array(
+			'week' => $week,
+			'wday' => $wday,
+		);
 	}
 }

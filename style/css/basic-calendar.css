@@ -9,6 +9,10 @@
   height: 60px;
   padding: 6px;
 }
+.tsd-basic-calendar-table td {
+  background-color: yellow;
+  color: black;
+}
 .tsd-basic-calendar-table .tsd-month-day-div {
   position: relative;
   overflow: auto;
