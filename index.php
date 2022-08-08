@@ -17,21 +17,17 @@
 	$cal->set_default_day_colors("black", "yellow");
 	// $cal->set_default_day_text("Avail");
 	$cal->set_day_colors(array(
-		1 => array('pink', 'blue'),
-		8 => array('pink', 'blue'),
-		31 => array('pink', 'blue'),
-	));
-	$cal->set_day_colors(array(
-		14 => array('black', 'orange'),
-		15 => array('black', 'orange'),
+		'2022-5-1' => array('pink', 'blue'),
+		'2022-5-8' => array('pink', 'blue'),
+		'2022-5-31' => array('pink', 'blue'),
 	));
 		$cal->set_day_text(array(
-		1 => 'Avail',
-		8 => 'Avail',
-		31 => 'Avail',
+		'2022-5-1' => 'Avail',
+		'2022-5-8' => 'Avail',
+		'2022-5-8' => 'Avail',
 	));
 
-	book_days($cal, array(14,15));
+	book_days($cal, array('2022-5-14','2022-5-15'));
 
 	function book_days($cal, $days_array) {
 		$color_array = array();
